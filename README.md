@@ -16,6 +16,9 @@ Automatic hot-reloading webserver based on a file watcher, a websocket server, a
 
 - [hotweby](#hotweby)
 - [Getting started](#getting-started)
+  - [Global install](#global-install)
+  - [Show help](#show-help)
+  - [Run as webserver](#run-as-webserver)
 - [Contributing](#contributing)
 - [License](#license)
 - [Disclaimer](#disclaimer)
@@ -24,10 +27,30 @@ Automatic hot-reloading webserver based on a file watcher, a websocket server, a
 
 # Getting started
 
+## Global install
 ```sh
 npm i -g @noblemajo/hotweby
 ```
 
+## Show help
+```sh
+hotweby --help
+```
+
+```js
+Usage: hotweby [options]
+
+Automatic multiway hot-reloading webserver
+
+Options:
+  -V, --version               output the version number
+  -p, --port <number>         hot reload server port (env: SERVE_PORT)
+  -d, --dir <string>          target dir (default: ".", env: SERVE_PATH)
+  -i, --id-endpoint <string>  id endpoint (default: "/noblemajo-serve-id", env: SERVE_ID_ENDPOINT)
+  -h, --help                  display help for command
+```
+
+## Run as webserver
 ```sh
 hotweby -p 8080 -d html
 ```
