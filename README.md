@@ -12,7 +12,7 @@
 <!-- ![](https://img.shields.io/badge/dynamic/json?color=darkred&label=open%20issues&query=open_issues&suffix=x&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fnoblemajo%2Fhotweby)
 ![](https://img.shields.io/badge/dynamic/json?color=orange&label=subscribers&query=subscribers_count&suffix=x&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fnoblemajo%2Fhotweby) -->
 
-Automatic hot reloading webhotwebyr based on file watcher, websocket and id endpoint.
+Automatic hot-reloading webserver based on a file watcher, a websocket server, a id endpoint and a html injected javascript function.
 
 - [hotweby](#hotweby)
 - [Getting started](#getting-started)
