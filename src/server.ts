@@ -7,26 +7,58 @@ export function createReloadHtmlCode(
     idEndpoint: string,
 ) {
     const location: any = undefined as any
+    const window: any = undefined as any
 
     const reloadHtmlScript = async () => {
-        const resp = await fetch(".${ENDPOINT_ID}")
+        console.log("@noblemajo/serve connect websocket...")
 
-        const body = await resp.text()
-        const id = Number(body)
-        if (isNaN(id)) {
-            return console.error("@noblemajo/serve id is not a number")
+        const err = await new Promise<any>((res) => {
+            try {
+                const wsUrl = (
+                    window.location.protocol === "https:" ?
+                        "wss://" :
+                        "ws://"
+                ) + window.location.host
+
+                const ws = new WebSocket(wsUrl)
+                ws.onopen = () => console.log("@noblemajo/serve websocket connected")
+                ws.onclose = () => res(undefined)
+                ws.onerror = (err) => res(err)
+            } catch (err) {
+                res(err)
+            }
+        })
+
+        if (err == undefined) {
+            location.reload()
         }
 
-        console.info("Current @noblemajo/serve id: " + id)
+        console.log(
+            "@noblemajo/serve websocket error:\n",
+            err,
+            "\n\nFallback to fetch..."
+        )
+
+        let resp = await fetch(".${ENDPOINT_ID}")
+        let body = await resp.text()
+        const initialId = Number(body)
+        if (isNaN(initialId)) {
+            return console.log("@noblemajo/serve id is not a number")
+        }
+
+        console.log("@noblemajo/serve initial id: " + initialId)
 
         while (true) {
             try {
-                await new Promise<void>((res, rej) => {
-                    const ws = new WebSocket(".")
-                    ws.on("close", () => {
-                        location.reload()
-                    })
-                })
+                resp = await fetch(".${ENDPOINT_ID}")
+                body = await resp.text()
+                const newId = Number(body)
+
+                if (initialId !== newId) {
+                    location.reload()
+                }
+
+                await new Promise<void>((res) => setTimeout(res, 400))
             } catch (err) {
                 console.log(
                     "Error in @noblemajo/serve loop:\n",
