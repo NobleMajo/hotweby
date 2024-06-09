@@ -58,7 +58,7 @@ export function createReloadHtmlCode(
                     location.reload()
                 }
 
-                await new Promise<void>((res) => setTimeout(res, 400))
+                await new Promise<void>((res) => setTimeout(res, 800))
             } catch (err) {
                 console.log(
                     "Error in @noblemajo/serve loop:\n",

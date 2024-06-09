@@ -1,6 +1,6 @@
 {
   "name": "@noblemajo/serve",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Automatic hot reloading webserver based on file watcher, websocket and id endpoint",
   "type": "module",
   "main": "dist/index.js",
