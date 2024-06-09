@@ -4,40 +4,15 @@ import { Option, program } from "commander"
 import * as afs from "fs/promises"
 import * as path from "path"
 import { fileURLToPath } from "url"
-import { createExpress, createWebSocketServer } from "./server.js"
-
-const location: any = undefined as any
-
-const func = (async () => {
-    const resp = await fetch("./hot-html-id")
-
-    const body = await resp.text()
-    const id = Number(body)
-    if (isNaN(id)) {
-        return console.error("API-ID is not a number")
-    }
-
-    console.info("Current API-ID " + id)
-
-    setInterval(async () => {
-        const resp = await fetch("./id")
-        const body = await resp.text()
-        const id2 = Number(body)
-        if (isNaN(id2)) {
-            return console.error("API-ID is not a number")
-        }
-
-        if (id !== id2) {
-            location.reload()
-        }
-    }, 200)
-})
+import { createExpress, createReloadHtmlCode, createWebSocketServer } from "./server.js"
 
 const executrionDir = process.cwd()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
 let reloadId: number = 0
 const getReloadId = () => reloadId
+
 let triggerReloadFuncs: (() => void)[] = []
 const triggerReloads = () => {
     reloadId++
@@ -47,11 +22,10 @@ const triggerReloads = () => {
         triggerReloadFunc()
     }
 }
-const reloadHtmlCode = "<script>\n" + func + "()\n</script>"
 
 const packageJson = JSON.parse(
     await afs.readFile(
-        __dirname + "/package.json",
+        __dirname + "/../package.json",
         "utf-8"
     )
 )
@@ -76,9 +50,7 @@ program
             "-d, --dir <string>",
             "target dir"
         )
-            .argParser(
-                (value) => Number(value)
-            )
+            .default(".")
             .env("SERVE_PATH")
     )
     .addOption(
@@ -90,27 +62,32 @@ program
             .env("SERVE_ID_ENDPOINT")
     )
     .action(async (str, options) => {
-        console.log("str: ", str)
-
         if (!str.idEndpoint.startsWith("/")) {
             str.idEndpoint = "/" + str.idEndpoint
         }
 
-        const targetDir = (
+        str.dir = path.normalize(
             !str.dir.startsWith("/") ?
-                path.normalize(executrionDir + "/" + str.dir) :
+                executrionDir + "/" + str.dir :
                 str.dir
         )
 
-        const stat = await afs.stat(targetDir)
+        console.info("Settings: ", str)
+
+        const reloadHtmlCode = createReloadHtmlCode(
+            str.idEndpoint
+        )
+
+        const stat = await afs.stat(str.dir)
 
         if (!stat.isDirectory()) {
-            throw new Error("'" + targetDir + "' is not a directory!")
+            throw new Error("'" + str.dir + "' is not a directory!")
         }
 
         const app = createExpress(
-            targetDir,
+            str.dir,
             reloadHtmlCode,
+            str.idEndpoint,
             getReloadId,
         )
 
@@ -118,15 +95,13 @@ program
             console.info("Hot-HTML server is running on port '" + str.port + "'")
         })
 
-        const wsServer = createWebSocketServer(
+        createWebSocketServer(
             httpServer,
             (triggerFunc) => triggerReloadFuncs.push(triggerFunc)
         )
 
-        const dirWatcher = afs.watch(
-            targetDir,
-            "utf8"
-        )
+        const dirWatcher = afs.watch(str.dir)
+        console.info("Wait for file in '" + str.dir + "' changes...")
 
         for await (const x of dirWatcher) {
             console.info("Hot-HTML trigger reload...")

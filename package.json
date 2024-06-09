@@ -8,10 +8,10 @@
     "serve": "./dist/index.js"
   },
   "scripts": {
-    "start": "node --enable-source-maps dist/index.js",
+    "start": "node --enable-source-maps dist/index.js -p 48080 -d test",
     "build": "tsc",
-    "exec": "tsc && node --enable-source-maps dist/index.js",
-    "dev": "nodemon -w ./src --ext *.ts -x \"tsc && node --enable-source-maps dist/index.js\""
+    "exec": "tsc && node --enable-source-maps dist/index.js -p 48080 -d test",
+    "dev": "nodemon -w ./src --ext *.ts -x \"tsc && node --enable-source-maps dist/index.js -p 48080 -d test\""
   },
   "keywords": [
     "cli",
@@ -52,10 +52,12 @@
     "@types/node": "^20.12.7",
     "@types/ws": "^8.5.10",
     "nodemon": "^3.1.0",
-    "ts-toolbelt": "^9.6.0"
+    "ts-toolbelt": "^9.6.0",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "commander": "^12.1.0",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
   }
 }

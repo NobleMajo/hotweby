@@ -1,16 +1,60 @@
 import express from "express"
 import * as afs from "fs/promises"
 import { IncomingMessage, Server, ServerResponse } from "http"
-import { WebSocketServer } from "ws"
+import { WebSocket, WebSocketServer } from "ws"
+
+export function createReloadHtmlCode(
+    idEndpoint: string,
+) {
+    const location: any = undefined as any
+
+    const reloadHtmlScript = async () => {
+        const resp = await fetch(".${ENDPOINT_ID}")
+
+        const body = await resp.text()
+        const id = Number(body)
+        if (isNaN(id)) {
+            return console.error("@noblemajo/serve id is not a number")
+        }
+
+        console.info("Current @noblemajo/serve id: " + id)
+
+        while (true) {
+            try {
+                await new Promise<void>((res, rej) => {
+                    const ws = new WebSocket(".")
+                    ws.on("close", () => {
+                        location.reload()
+                    })
+                })
+            } catch (err) {
+                console.log(
+                    "Error in @noblemajo/serve loop:\n",
+                    err
+                )
+            }
+        }
+
+    }
+
+    const reloadHtmlCode = ("" + reloadHtmlScript)
+        .split("${ENDPOINT_ID}")
+        .join(idEndpoint)
+
+    return "<script>\n(" +
+        reloadHtmlCode +
+        ")()\n</script>"
+}
 
 export function createExpress(
     targetDir: string,
     reloadHtmlCode: string,
+    idEndpoint: string,
     getReloadId: () => number
 ) {
     const app = express()
 
-    app.get("/hot-html-id", (req, res) => {
+    app.get(idEndpoint, (req, res) => {
         res.status(200)
         res.send("" + getReloadId())
     })
