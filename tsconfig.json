@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": [
+      "ESNext"
+    ],
+    "allowJs": false,
+    "resolveJsonModule": false,
+    "declaration": true, // emit .d.ts files
+    "inlineSourceMap": true, // emit .js.map files
+    "declarationMap": true, // emit .d.ts.map files
+    "inlineSources": true, // emit inline source map in .d.ts and .js files
+    "removeComments": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": false,
+  },
+  "include": [
+    "src/**/*.ts",
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

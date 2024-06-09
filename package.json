@@ -1,0 +1,61 @@
+{
+  "name": "@noblemajo/serve",
+  "version": "1.0.1",
+  "description": "Automatic hot reloading webserver based on file watcher, websocket and id endpoint",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "serve": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "node --enable-source-maps dist/index.js",
+    "build": "tsc",
+    "exec": "tsc && node --enable-source-maps dist/index.js",
+    "dev": "nodemon -w ./src --ext *.ts -x \"tsc && node --enable-source-maps dist/index.js\""
+  },
+  "keywords": [
+    "cli",
+    "commandline",
+    "reloader",
+    "html",
+    "web",
+    "hotreload",
+    "hotserve",
+    "hot",
+    "livereload",
+    "liveserve",
+    "live",
+    "autoreload",
+    "autoserve",
+    "auto",
+    "automation",
+    "website",
+    "webserver"
+  ],
+  "author": {
+    "name": "Majo Richter",
+    "alias": "NobleMajo",
+    "email": "majo@coreunit.net",
+    "url": "https://github.com/NobleMajo"
+  },
+  "homepage": "https://github.com/NobleMajo/serve",
+  "bugs": {
+    "url": "https://github.com/NobleMajo/serve/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:NobleMajo/serve.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "@types/ws": "^8.5.10",
+    "nodemon": "^3.1.0",
+    "ts-toolbelt": "^9.6.0"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "express": "^4.19.2"
+  }
+}
