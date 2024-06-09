@@ -1,11 +1,11 @@
 {
-  "name": "@noblemajo/serve",
-  "version": "1.0.2",
+  "name": "hotweby",
+  "version": "1.0.3",
   "description": "Automatic hot reloading webserver based on file watcher, websocket and id endpoint",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "serve": "./dist/index.js"
+    "hotweby": "./dist/index.js"
   },
   "scripts": {
     "start": "node --enable-source-maps dist/index.js -p 48080 -d test",
@@ -38,13 +38,13 @@
     "email": "majo@coreunit.net",
     "url": "https://github.com/NobleMajo"
   },
-  "homepage": "https://github.com/NobleMajo/serve",
+  "homepage": "https://github.com/NobleMajo/hotweby",
   "bugs": {
-    "url": "https://github.com/NobleMajo/serve/issues"
+    "url": "https://github.com/NobleMajo/hotweby/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:NobleMajo/serve.git"
+    "url": "git@github.com:NobleMajo/hotweby.git"
   },
   "license": "MIT",
   "devDependencies": {
