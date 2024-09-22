@@ -56,12 +56,12 @@ hotweby -p 8080 -d html
 ```
 
 # Contributing
-Contributions to hotweby are welcome!  
+Contributions to this project are welcome!  
 Interested users can refer to the guidelines provided in the [CONTRIBUTING.md](CONTRIBUTING.md) file to contribute to the project and help improve its functionality and features.
 
 # License
-hotweby is licensed under the [MIT license](LICENSE), providing users with flexibility and freedom to use and modify the software according to their needs.
+This project is licensed under the [MIT license](LICENSE), providing users with flexibility and freedom to use and modify the software according to their needs.
 
 # Disclaimer
-hotweby is provided without warranties.  
+This project is provided without warranties.  
 Users are advised to review the accompanying license for more information on the terms of use and limitations of liability.
