@@ -78,10 +78,16 @@ program
             str.idEndpoint
         )
 
-        const stat = await afs.stat(str.dir)
+        try {
+            const stat = await afs.stat(str.dir)
 
-        if (!stat.isDirectory()) {
-            throw new Error("'" + str.dir + "' is not a directory!")
+            if (!stat.isDirectory()) {
+                throw new Error("'" + str.dir + "' is not a directory!")
+            }
+        } catch (err: any) {
+            if (err.code === "ENOENT") {
+                console.error("Directory '" + str.dir + "' not exists!")
+            }
         }
 
         const app = createExpress(
