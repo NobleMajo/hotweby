@@ -3,7 +3,7 @@ run-name: Update npm dependencies
 
 on:
   schedule:
-    - cron: '30 12 3,17 * *'
+    - cron: '30 12 1,15 * *'
   workflow_dispatch:
 
 permissions:
