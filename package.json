@@ -1,7 +1,7 @@
 {
   "name": "hotweby",
-  "version": "1.0.9",
-  "description": "Automatic multiway hot-reloading webserver",
+  "version": "1.0.10",
+  "description": "Automated multi-method hot-reloading web server",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -11,6 +11,7 @@
     "start": "node --enable-source-maps dist/index.js -p 48080 -d test",
     "build": "tsc",
     "exec": "tsc && node --enable-source-maps dist/index.js -p 48080 -d test",
+    "test": "echo 'No tests defined!'",
     "dev": "nodemon -w ./src --ext *.ts -x \"tsc && node --enable-source-maps dist/index.js -p 48080 -d test\""
   },
   "keywords": [

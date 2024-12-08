@@ -29,7 +29,7 @@ Automatic hot-reloading webserver based on a file watcher, a websocket server, a
 
 ## Global install
 ```sh
-npm i -g @noblemajo/hotweby
+npm i hotweby
 ```
 
 ## Show help
