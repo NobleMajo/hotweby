@@ -48,8 +48,7 @@ jobs:
         name: build-artifacts
         path: |
           dist
-          package.json
-          package-lock.json
+          package*.json
 
   publish-npm:
     needs: update-deps
