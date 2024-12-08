@@ -11,6 +11,7 @@
     "start": "node --enable-source-maps dist/index.js -p 48080 -d test",
     "build": "tsc",
     "exec": "tsc && node --enable-source-maps dist/index.js -p 48080 -d test",
+    "test": "echo 'No tests defined!'",
     "dev": "nodemon -w ./src --ext *.ts -x \"tsc && node --enable-source-maps dist/index.js -p 48080 -d test\""
   },
   "keywords": [
