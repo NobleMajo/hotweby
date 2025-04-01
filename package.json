@@ -1,6 +1,6 @@
 {
   "name": "hotweby",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Automatic multiway hot-reloading webserver",
   "type": "module",
   "main": "dist/index.js",
