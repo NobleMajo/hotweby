@@ -1,29 +1,30 @@
 import express from "express"
 import * as afs from "fs/promises"
 import { IncomingMessage, Server, ServerResponse } from "http"
+import * as path from "path"
 import { WebSocket, WebSocketServer } from "ws"
 
-export function createReloadHtmlCode(
-    idEndpoint: string,
-) {
+export function createReloadHtmlCode(idEndpoint: string) {
     const location: any = undefined as any
     const window: any = undefined as any
 
     const reloadHtmlScript = async () => {
         console.log("@noblemajo/serve connect websocket...")
 
-        const err = await new Promise<any>((res) => {
+        const err = await new Promise<any>(res => {
             try {
-                const wsUrl = (
-                    window.location.protocol === "https:" ?
-                        "wss://" :
-                        "ws://"
-                ) + window.location.host
+                const wsUrl =
+                    (window.location.protocol === "https:"
+                        ? "wss://"
+                        : "ws://") + window.location.host
 
                 const ws = new WebSocket(wsUrl)
-                ws.onopen = () => console.log("@noblemajo/serve websocket connected")
+                ws.onopen = () =>
+                    console.log(
+                        "@noblemajo/serve websocket connected",
+                    )
                 ws.onclose = () => res(undefined)
-                ws.onerror = (err) => res(err)
+                ws.onerror = err => res(err)
             } catch (err) {
                 res(err)
             }
@@ -36,14 +37,16 @@ export function createReloadHtmlCode(
         console.log(
             "@noblemajo/serve websocket error:\n",
             err,
-            "\n\nFallback to fetch..."
+            "\n\nFallback to fetch...",
         )
 
         let resp = await fetch(".${ENDPOINT_ID}")
         let body = await resp.text()
         const initialId = Number(body)
         if (isNaN(initialId)) {
-            return console.log("@noblemajo/serve id is not a number")
+            return console.log(
+                "@noblemajo/serve id is not a number",
+            )
         }
 
         console.log("@noblemajo/serve initial id: " + initialId)
@@ -58,31 +61,31 @@ export function createReloadHtmlCode(
                     location.reload()
                 }
 
-                await new Promise<void>((res) => setTimeout(res, 800))
+                await new Promise<void>(res =>
+                    setTimeout(res, 800),
+                )
             } catch (err) {
                 console.log(
                     "Error in @noblemajo/serve loop:\n",
-                    err
+                    err,
                 )
             }
         }
-
     }
 
     const reloadHtmlCode = ("" + reloadHtmlScript)
         .split("${ENDPOINT_ID}")
         .join(idEndpoint)
 
-    return "<script>\n(" +
-        reloadHtmlCode +
-        ")()\n</script>"
+    return "<script>\n(" + reloadHtmlCode + ")()\n</script>"
 }
 
 export function createExpress(
     targetDir: string,
     reloadHtmlCode: string,
     idEndpoint: string,
-    getReloadId: () => number
+    autoExtensionResolution: boolean,
+    getReloadId: () => number,
 ) {
     const app = express()
 
@@ -92,22 +95,48 @@ export function createExpress(
     })
 
     app.use(async (req, res, next) => {
-        let path = req.path
-        if (path.endsWith(".html") || path.endsWith("/")) {
-            if (path.endsWith("/")) {
-                path += "index.html"
+        let reqPath = req.path
+        if (
+            reqPath.endsWith(".html") ||
+            reqPath.endsWith("/")
+        ) {
+            if (reqPath.endsWith("/")) {
+                reqPath += "index.html"
             }
 
             try {
-                const data = await afs.readFile(targetDir + path, "utf8")
+                const data = await afs.readFile(
+                    targetDir + reqPath,
+                    "utf8",
+                )
                 res.status(200)
                 res.send(reloadHtmlCode + data.toString())
             } catch (err) {
                 res.status(400)
-                res.send("Cant read html-file from '" + path + "'")
+                res.send(
+                    "Cant read html-file from '" + path + "'",
+                )
             }
 
             return
+        }
+
+        if (autoExtensionResolution) {
+            let realPath = targetDir + "/" + req.url
+            if ((await pathType(realPath)) === "none") {
+                const files = await afs.readdir(
+                    path.dirname(realPath),
+                )
+
+                const baseName = path.basename(realPath)
+                for (const file of files) {
+                    if (file.startsWith(baseName + ".")) {
+                        req.url =
+                            path.dirname(req.url) + "/" + file
+                        break
+                    }
+                }
+            }
         }
 
         next()
@@ -118,11 +147,22 @@ export function createExpress(
     return app
 }
 
+export async function pathType(
+    path: string,
+): Promise<"file" | "dir" | "none"> {
+    try {
+        const stat = await afs.stat(path)
+        return stat.isFile() ? "file" : "dir"
+    } catch {}
+    return "none"
+}
+
 export function createWebSocketServer(
-    httpServer: Server<typeof IncomingMessage, typeof ServerResponse>,
-    addTriggerFunction: (
-        triggerFunction: () => void
-    ) => void
+    httpServer: Server<
+        typeof IncomingMessage,
+        typeof ServerResponse
+    >,
+    addTriggerFunction: (triggerFunction: () => void) => void,
 ) {
     const wsServer = new WebSocketServer({ noServer: true })
     wsServer.on("connection", (ws, req) => {
@@ -136,9 +176,9 @@ export function createWebSocketServer(
         })
     })
 
-    httpServer.on('upgrade', (req, socket, head) => {
-        wsServer.handleUpgrade(req, socket, head, (ws) => {
-            wsServer.emit('connection', ws, req)
+    httpServer.on("upgrade", (req, socket, head) => {
+        wsServer.handleUpgrade(req, socket, head, ws => {
+            wsServer.emit("connection", ws, req)
         })
     })
 

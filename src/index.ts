@@ -4,7 +4,11 @@ import { Option, program } from "commander"
 import * as afs from "fs/promises"
 import * as path from "path"
 import { fileURLToPath } from "url"
-import { createExpress, createReloadHtmlCode, createWebSocketServer } from "./server.js"
+import {
+    createExpress,
+    createReloadHtmlCode,
+    createWebSocketServer,
+} from "./server.js"
 
 const executrionDir = process.cwd()
 const __filename = fileURLToPath(import.meta.url)
@@ -24,10 +28,7 @@ const triggerReloads = () => {
 }
 
 const packageJson = JSON.parse(
-    await afs.readFile(
-        __dirname + "/../package.json",
-        "utf-8"
-    )
+    await afs.readFile(__dirname + "/../package.json", "utf-8"),
 )
 
 program
@@ -37,29 +38,29 @@ program
     .addOption(
         new Option(
             "-p, --port <number>",
-            "hot reload server port"
+            "hot reload server port",
         )
             .makeOptionMandatory()
-            .argParser(
-                (value) => Number(value)
-            )
-            .env("SERVE_PORT")
+            .argParser(value => Number(value))
+            .env("SERVE_PORT"),
     )
     .addOption(
-        new Option(
-            "-d, --dir <string>",
-            "target dir"
-        )
+        new Option("-d, --dir <string>", "target dir")
             .default(".")
-            .env("SERVE_PATH")
+            .env("SERVE_PATH"),
+    )
+    .addOption(
+        new Option("-i, --id-endpoint <string>", "id endpoint")
+            .default("/noblemajo-serve-id")
+            .env("SERVE_ID_ENDPOINT"),
     )
     .addOption(
         new Option(
-            "-i, --id-endpoint <string>",
-            "id endpoint"
+            "-a, --auto-extension-resolution",
+            "try to resolve any extension if not present in request by checking dir",
         )
-            .default("/noblemajo-serve-id")
-            .env("SERVE_ID_ENDPOINT")
+            .default(false)
+            .env("SERVE_AUTO_EXTENSION_RESOLUTION"),
     )
     .action(async (str, options) => {
         if (!str.idEndpoint.startsWith("/")) {
@@ -67,26 +68,40 @@ program
         }
 
         str.dir = path.normalize(
-            !str.dir.startsWith("/") ?
-                executrionDir + "/" + str.dir :
-                str.dir
+            !str.dir.startsWith("/")
+                ? executrionDir + "/" + str.dir
+                : str.dir,
         )
 
         console.info("Settings: ", str)
 
         const reloadHtmlCode = createReloadHtmlCode(
-            str.idEndpoint
+            str.idEndpoint,
         )
 
+        const autoExtensionResolution = Boolean(
+            str.autoExtensionResolution ?? false,
+        )
+
+        console.info(
+            "Auto extension resolution is " +
+                (autoExtensionResolution ? "ON" : "OFF") +
+                ".",
+        )
+        
         try {
             const stat = await afs.stat(str.dir)
 
             if (!stat.isDirectory()) {
-                throw new Error("'" + str.dir + "' is not a directory!")
+                throw new Error(
+                    "'" + str.dir + "' is not a directory!",
+                )
             }
         } catch (err: any) {
             if (err.code === "ENOENT") {
-                console.error("Directory '" + str.dir + "' not exists!")
+                console.error(
+                    "Directory '" + str.dir + "' not exists!",
+                )
             }
         }
 
@@ -94,20 +109,30 @@ program
             str.dir,
             reloadHtmlCode,
             str.idEndpoint,
+            autoExtensionResolution,
             getReloadId,
         )
 
-        const httpServer = app.listen(str.port, "0.0.0.0", async () => {
-            console.info("Hot-HTML server is running on port '" + str.port + "'")
-        })
+        const httpServer = app.listen(
+            str.port,
+            "0.0.0.0",
+            async () => {
+                console.info(
+                    "Hot-HTML server is running on port '" +
+                        str.port +
+                        "'",
+                )
+            },
+        )
 
-        createWebSocketServer(
-            httpServer,
-            (triggerFunc) => triggerReloadFuncs.push(triggerFunc)
+        createWebSocketServer(httpServer, triggerFunc =>
+            triggerReloadFuncs.push(triggerFunc),
         )
 
         const dirWatcher = afs.watch(str.dir)
-        console.info("Wait for file in '" + str.dir + "' changes...")
+        console.info(
+            "Wait for file in '" + str.dir + "' changes...",
+        )
 
         for await (const x of dirWatcher) {
             console.info("Hot-HTML trigger reload...")
@@ -116,6 +141,3 @@ program
     })
 
 program.parse()
-
-
-
