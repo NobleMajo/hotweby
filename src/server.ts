@@ -95,56 +95,72 @@ export function createExpress(
     })
 
     app.use(async (req, res, next) => {
-        let reqPath = req.path
         if (
-            reqPath.endsWith(".html") ||
-            reqPath.endsWith("/")
+            !req.path.endsWith(".html") &&
+            !req.path.endsWith("/")
         ) {
-            if (reqPath.endsWith("/")) {
-                reqPath += "index.html"
-            }
-
-            try {
-                const data = await afs.readFile(
-                    targetDir + reqPath,
-                    "utf8",
-                )
-                res.status(200)
-                res.send(reloadHtmlCode + data.toString())
-            } catch (err) {
-                res.status(400)
-                res.send(
-                    "Cant read html-file from '" + path + "'",
-                )
-            }
-
-            return
+            return next()
         }
 
-        if (autoExtensionResolution) {
-            let realPath = targetDir + "/" + req.url
-            if ((await pathType(realPath)) === "none") {
-                const files = await afs.readdir(
-                    path.dirname(realPath),
-                )
+        let reqPath = req.path
 
-                const baseName = path.basename(realPath)
-                for (const file of files) {
-                    if (file.startsWith(baseName + ".")) {
-                        req.url =
-                            path.dirname(req.url) + "/" + file
-                        break
-                    }
-                }
-            }
+        if (reqPath.endsWith("/")) {
+            reqPath += "index.html"
         }
 
-        next()
+        try {
+            const data = await afs.readFile(
+                targetDir + reqPath,
+                "utf8",
+            )
+            res.status(200)
+            res.send(reloadHtmlCode + "\n" + data.toString())
+        } catch (err) {
+            res.status(400)
+            res.send("Cant read html-file from '" + path + "'")
+        }
     })
+
+    autoExtensionResolution &&
+        app.use(async (req, res, next) => {
+            const resolvedExtension =
+                await autoResolveExtensions(req.url, targetDir)
+
+            if (resolvedExtension) {
+                req.url = resolvedExtension
+            }
+
+            next()
+        })
 
     app.use(express.static(targetDir))
 
     return app
+}
+
+export async function autoResolveExtensions(
+    reqUrl: string,
+    targetDir: string,
+): Promise<string | undefined> {
+    while (reqUrl.startsWith("/")) {
+        reqUrl = reqUrl.slice(1)
+    }
+
+    if (reqUrl === "") {
+        return undefined
+    }
+
+    let realPath = targetDir + "/" + reqUrl
+    if ((await pathType(realPath)) === "none") {
+        const files = await afs.readdir(path.dirname(realPath))
+
+        const baseName = path.basename(realPath)
+        for (const file of files) {
+            if (file.startsWith(baseName + ".")) {
+                return
+            }
+        }
+    }
 }
 
 export async function pathType(
