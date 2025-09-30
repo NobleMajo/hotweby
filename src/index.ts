@@ -14,14 +14,12 @@ const executrionDir = process.cwd()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-let reloadId: number = 0
-const getReloadId = () => reloadId
+export type TriggerHandler = () => void
 
-let triggerReloadFuncs: (() => void)[] = []
+let registeredTriggers: TriggerHandler[] = []
 const triggerReloads = () => {
-    reloadId++
-    const reloads = triggerReloadFuncs
-    triggerReloadFuncs = []
+    const reloads = registeredTriggers
+    registeredTriggers = []
     for (const triggerReloadFunc of reloads) {
         triggerReloadFunc()
     }
@@ -54,14 +52,6 @@ program
     )
     .addOption(
         new Option(
-            "-i, --id-endpoint <string>",
-            "Endpoint to get the reload id to check if state has changed.",
-        )
-            .default("/noblemajo-serve-id")
-            .env("SERVE_ID_ENDPOINT"),
-    )
-    .addOption(
-        new Option(
             "-a, --auto-extension-resolution",
             "Try to auto default missing request file extensions. Checks if the requested dir containing a filename starting with requested name + '.'",
         )
@@ -69,10 +59,6 @@ program
             .env("SERVE_AUTO_EXTENSION_RESOLUTION"),
     )
     .action(async (str, options) => {
-        if (!str.idEndpoint.startsWith("/")) {
-            str.idEndpoint = "/" + str.idEndpoint
-        }
-
         str.dir = path.normalize(
             !str.dir.startsWith("/")
                 ? executrionDir + "/" + str.dir
@@ -81,9 +67,7 @@ program
 
         console.info("Settings: ", str)
 
-        const reloadHtmlCode = createReloadHtmlCode(
-            str.idEndpoint,
-        )
+        const reloadHtmlCode = createReloadHtmlCode()
 
         const autoExtensionResolution = Boolean(
             str.autoExtensionResolution ?? false,
@@ -114,9 +98,7 @@ program
         const app = createExpress(
             str.dir,
             reloadHtmlCode,
-            str.idEndpoint,
             autoExtensionResolution,
-            getReloadId,
         )
 
         const httpServer = app.listen(
@@ -132,7 +114,7 @@ program
         )
 
         createWebSocketServer(httpServer, triggerFunc =>
-            triggerReloadFuncs.push(triggerFunc),
+            registeredTriggers.push(triggerFunc),
         )
 
         const dirWatcher = afs.watch(str.dir)

@@ -1,7 +1,7 @@
 {
   "name": "hotweby",
-  "version": "1.3.0",
-  "description": "Automatic multiway hot-reloading webserver",
+  "version": "1.4.0",
+  "description": "Automatic hot-reloading webserver using websockets",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

@@ -3,79 +3,47 @@ import * as afs from "fs/promises"
 import { IncomingMessage, Server, ServerResponse } from "http"
 import * as path from "path"
 import { WebSocket, WebSocketServer } from "ws"
+import { TriggerHandler } from "./index.js"
 
-export function createReloadHtmlCode(idEndpoint: string) {
+export function createReloadHtmlCode() {
     const location: any = undefined as any
     const window: any = undefined as any
 
     const reloadHtmlScript = async () => {
-        console.log("@noblemajo/serve connect websocket...")
+        console.log("[HOTWEBY]: connect websocket...")
+        const loc =
+            location && typeof location.reload == "function"
+                ? location
+                : window.location
 
-        const err = await new Promise<any>(res => {
-            try {
-                const wsUrl =
-                    (window.location.protocol === "https:"
-                        ? "wss://"
-                        : "ws://") + window.location.host
+        const connectWs = () => {
+            const wsUrl =
+                (loc.protocol === "https:"
+                    ? "wss://"
+                    : "ws://") + loc.host
 
-                const ws = new WebSocket(wsUrl)
-                ws.onopen = () =>
-                    console.log(
-                        "@noblemajo/serve websocket connected",
-                    )
-                ws.onclose = () => res(undefined)
-                ws.onerror = err => res(err)
-            } catch (err) {
-                res(err)
-            }
-        })
-
-        if (err == undefined) {
-            location.reload()
-        }
-
-        console.log(
-            "@noblemajo/serve websocket error:\n",
-            err,
-            "\n\nFallback to fetch...",
-        )
-
-        let resp = await fetch(".${ENDPOINT_ID}")
-        let body = await resp.text()
-        const initialId = Number(body)
-        if (isNaN(initialId)) {
-            return console.log(
-                "@noblemajo/serve id is not a number",
-            )
-        }
-
-        console.log("@noblemajo/serve initial id: " + initialId)
-
-        while (true) {
-            try {
-                resp = await fetch(".${ENDPOINT_ID}")
-                body = await resp.text()
-                const newId = Number(body)
-
-                if (initialId !== newId) {
-                    location.reload()
-                }
-
-                await new Promise<void>(res =>
-                    setTimeout(res, 800),
-                )
-            } catch (err) {
+            const ws = new WebSocket(wsUrl)
+            ws.onopen = () =>
+                console.log("[HOTWEBY]: websocket connected")
+            ws.onclose = () => {
                 console.log(
-                    "Error in @noblemajo/serve loop:\n",
+                    "[HOTWEBY]: websocket closed, reloading...",
+                )
+                setTimeout(() => loc.reload(), 100)
+            }
+            ws.onerror = err => {
+                console.error(
+                    "[HOTWEBY]: websocket error, reloading...",
                     err,
                 )
+                setTimeout(() => loc.reload(), 1000)
             }
         }
+
+        connectWs()
     }
 
-    const reloadHtmlCode = ("" + reloadHtmlScript)
-        .split("${ENDPOINT_ID}")
-        .join(idEndpoint)
+    const reloadHtmlCode = "" + reloadHtmlScript
 
     return "<script>\n(" + reloadHtmlCode + ")()\n</script>"
 }
@@ -83,16 +51,9 @@ export function createReloadHtmlCode(idEndpoint: string) {
 export function createExpress(
     targetDir: string,
     reloadHtmlCode: string,
-    idEndpoint: string,
     autoExtensionResolution: boolean,
-    getReloadId: () => number,
 ) {
     const app = express()
-
-    app.get(idEndpoint, (req, res) => {
-        res.status(200)
-        res.send("" + getReloadId())
-    })
 
     app.use(async (req, res, next) => {
         if (
@@ -194,11 +155,11 @@ export function createWebSocketServer(
         typeof IncomingMessage,
         typeof ServerResponse
     >,
-    addTriggerFunction: (triggerFunction: () => void) => void,
+    registerTrigger: (triggerHandler: TriggerHandler) => void,
 ) {
     const wsServer = new WebSocketServer({ noServer: true })
     wsServer.on("connection", (ws, req) => {
-        addTriggerFunction(() => {
+        registerTrigger(() => {
             if (
                 ws.readyState === ws.OPEN ||
                 ws.readyState === ws.CONNECTING
