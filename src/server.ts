@@ -116,8 +116,24 @@ export function createExpress(
             res.status(200)
             res.send(reloadHtmlCode + "\n" + data.toString())
         } catch (err) {
-            res.status(400)
-            res.send("Cant read html-file from '" + path + "'")
+            console.error(
+                "Cant read requested html-file '" +
+                    req.path +
+                    "'" +
+                    "\nfrom '" +
+                    targetDir +
+                    reqPath +
+                    "':\n",
+                err,
+            )
+            res.status(503)
+            res.setHeader("Content-Type", "text/plain")
+            res.setHeader("Retry-After", "5")
+            res.send(
+                "Cant read requested html-file '" +
+                    req.path +
+                    "'",
+            )
         }
     })
 
