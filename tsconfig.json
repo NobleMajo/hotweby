@@ -4,7 +4,8 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": [
-      "ESNext"
+      "ESNext",
+      "DOM"
     ],
     "allowJs": false,
     "resolveJsonModule": false,

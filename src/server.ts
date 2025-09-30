@@ -6,21 +6,14 @@ import { WebSocket, WebSocketServer } from "ws"
 import { TriggerHandler } from "./index.js"
 
 export function createReloadHtmlCode() {
-    const location: any = undefined as any
-    const window: any = undefined as any
-
     const reloadHtmlScript = async () => {
         console.log("[HOTWEBY]: connect websocket...")
-        const loc =
-            location && typeof location.reload == "function"
-                ? location
-                : window.location
 
         const connectWs = () => {
             const wsUrl =
-                (loc.protocol === "https:"
+                (location.protocol === "https:"
                     ? "wss://"
-                    : "ws://") + loc.host
+                    : "ws://") + location.host
 
             const ws = new WebSocket(wsUrl)
             ws.onopen = () =>
@@ -29,14 +22,14 @@ export function createReloadHtmlCode() {
                 console.log(
                     "[HOTWEBY]: websocket closed, reloading...",
                 )
-                setTimeout(() => loc.reload(), 100)
+                setTimeout(() => location.reload(), 100)
             }
             ws.onerror = err => {
                 console.error(
                     "[HOTWEBY]: websocket error, reloading...",
                     err,
                 )
-                setTimeout(() => loc.reload(), 1000)
+                setTimeout(() => location.reload(), 1000)
             }
         }
 
