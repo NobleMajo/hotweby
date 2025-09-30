@@ -120,16 +120,22 @@ export async function autoResolveExtensions(
         return undefined
     }
 
-    let realPath = targetDir + "/" + reqUrl
-    if ((await pathType(realPath)) === "none") {
-        const files = await afs.readdir(path.dirname(realPath))
+    try {
+        let realPath = targetDir + "/" + reqUrl
+        if ((await pathType(realPath)) === "none") {
+            const files = await afs.readdir(
+                path.dirname(realPath),
+            )
 
-        const baseName = path.basename(realPath)
-        for (const file of files) {
-            if (file.startsWith(baseName + ".")) {
-                return
+            const baseName = path.basename(realPath)
+            for (const file of files) {
+                if (file.startsWith(baseName + ".")) {
+                    return
+                }
             }
         }
+    } catch (_) {
+        return undefined
     }
 }
 
