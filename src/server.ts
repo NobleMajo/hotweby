@@ -45,6 +45,7 @@ export function createExpress(
     targetDir: string,
     reloadHtmlCode: string,
     autoExtensionResolution: boolean,
+    verbose: boolean,
 ) {
     const app = express()
 
@@ -69,6 +70,16 @@ export function createExpress(
             )
             res.status(200)
             res.send(reloadHtmlCode + "\n" + data.toString())
+
+            verbose &&
+                console.info(
+                    "Served html-file '" +
+                        req.path +
+                        "' from '" +
+                        targetDir +
+                        reqPath +
+                        "'",
+                )
         } catch (err) {
             console.error(
                 "Cant read requested html-file '" +
@@ -94,7 +105,11 @@ export function createExpress(
     autoExtensionResolution &&
         app.use(async (req, res, next) => {
             const resolvedExtension =
-                await autoResolveExtensions(req.url, targetDir)
+                await autoResolveExtensions(
+                    req.url,
+                    targetDir,
+                    verbose,
+                )
 
             if (resolvedExtension) {
                 req.url = resolvedExtension
@@ -111,6 +126,7 @@ export function createExpress(
 export async function autoResolveExtensions(
     reqUrl: string,
     targetDir: string,
+    verbose: boolean,
 ): Promise<string | undefined> {
     while (reqUrl.startsWith("/")) {
         reqUrl = reqUrl.slice(1)
@@ -130,13 +146,31 @@ export async function autoResolveExtensions(
             const baseName = path.basename(realPath)
             for (const file of files) {
                 if (file.startsWith(baseName + ".")) {
-                    return
+                    verbose &&
+                        console.info(
+                            "Auto resolved extension for '" +
+                                reqUrl +
+                                "' to be '" +
+                                path.dirname(reqUrl) +
+                                "/" +
+                                file +
+                                "'",
+                        )
+                    return path.dirname(reqUrl) + "/" + file
                 }
             }
         }
-    } catch (_) {
-        return undefined
+    } catch (err) {
+        verbose &&
+            console.error(
+                "Error while auto resolving extension for " +
+                    reqUrl +
+                    "\n",
+                err,
+            )
     }
+
+    return undefined
 }
 
 export async function pathType(

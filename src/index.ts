@@ -40,7 +40,7 @@ program
         )
             .argParser(value => Number(value))
             .default(8080)
-            .env("SERVE_PORT"),
+            .env("HOTWEBY_PORT"),
     )
     .addOption(
         new Option(
@@ -48,15 +48,20 @@ program
             "Directory to serve html and other static files from.",
         )
             .default(".")
-            .env("SERVE_PATH"),
+            .env("HOTWEBY_PATH"),
     )
     .addOption(
         new Option(
-            "-a, --auto-extension-resolution",
+            "-a, --auto-extension",
             "Try to auto default missing request file extensions. Checks if the requested dir containing a filename starting with requested name + '.'",
         )
             .default(false)
-            .env("SERVE_AUTO_EXTENSION_RESOLUTION"),
+            .env("HOTWEBY_AUTO_EXTENSION"),
+    )
+    .addOption(
+        new Option("-v, --verbose", "Enables verbose logging.")
+            .default(false)
+            .env("HOTWEBY_VERBOSE"),
     )
     .action(async (str, options) => {
         str.dir = path.normalize(
@@ -69,13 +74,19 @@ program
 
         const reloadHtmlCode = createReloadHtmlCode()
 
-        const autoExtensionResolution = Boolean(
-            str.autoExtensionResolution ?? false,
+        const autoExtension = Boolean(
+            str.autoExtension ?? false,
         )
+
+        const verbose = Boolean(str.verbose ?? false)
+
+        if (verbose) {
+            console.info("Verbose mode is enabled.")
+        }
 
         console.info(
             "Auto extension resolution is " +
-                (autoExtensionResolution ? "ON" : "OFF") +
+                (autoExtension ? "ON" : "OFF") +
                 ".",
         )
 
@@ -98,7 +109,8 @@ program
         const app = createExpress(
             str.dir,
             reloadHtmlCode,
-            autoExtensionResolution,
+            autoExtension,
+            verbose,
         )
 
         const httpServer = app.listen(
