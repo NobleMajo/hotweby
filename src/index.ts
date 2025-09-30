@@ -40,24 +40,30 @@ program
             "-p, --port <number>",
             "hot reload server port",
         )
-            .makeOptionMandatory()
             .argParser(value => Number(value))
+            .default(8080)
             .env("SERVE_PORT"),
     )
     .addOption(
-        new Option("-d, --dir <string>", "target dir")
+        new Option(
+            "-d, --dir <string>",
+            "Directory to serve html and other static files from.",
+        )
             .default(".")
             .env("SERVE_PATH"),
     )
     .addOption(
-        new Option("-i, --id-endpoint <string>", "id endpoint")
+        new Option(
+            "-i, --id-endpoint <string>",
+            "Endpoint to get the reload id to check if state has changed.",
+        )
             .default("/noblemajo-serve-id")
             .env("SERVE_ID_ENDPOINT"),
     )
     .addOption(
         new Option(
             "-a, --auto-extension-resolution",
-            "try to resolve any extension if not present in request by checking dir",
+            "Try to auto default missing request file extensions. Checks if the requested dir containing a filename starting with requested name + '.'",
         )
             .default(false)
             .env("SERVE_AUTO_EXTENSION_RESOLUTION"),
@@ -88,7 +94,7 @@ program
                 (autoExtensionResolution ? "ON" : "OFF") +
                 ".",
         )
-        
+
         try {
             const stat = await afs.stat(str.dir)
 
