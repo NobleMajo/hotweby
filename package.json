@@ -1,6 +1,6 @@
 {
   "name": "hotweby",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "Automatic hot-reloading webserver using websockets",
   "type": "module",
   "main": "dist/index.js",
